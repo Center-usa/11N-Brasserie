@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restaurant POS</title>
+
+<style>
+:root {
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --primary: #2196f3;
+  --accent: #4caf50;
+  --accent-soft: rgba(76, 175, 80, 0.14);
+  --text: #222;
+  --muted: #555;
+  --border: #e1e1e1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(180deg, #f8fafb 0%, var(--bg) 100%);
+  color: var(--text);
+}
+
+.app-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 24px 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(249,250,251,0.95));
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(30, 40, 70, 0.08);
+  border: 1px solid rgba(255,255,255,0.8);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 2.7rem);
+  color: var(--accent);
+  letter-spacing: 0.03em;
+}
+
+.header p {
+  margin: 12px auto 0;
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.header .brand-subtitle {
+  margin-top: 8px;
+  font-size: 1rem;
+  color: #55606c;
+}
+
+.header .reviews {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+  color: #5f6a7d;
+  font-weight: 600;
+}
+
+.header .reviews a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.header .reviews a:hover {
+  text-decoration: underline;
+}
+
+.staff-toggle {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(33, 150, 243, 0.22);
+  background: rgba(33, 150, 243, 0.08);
+  color: var(--primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.staff-toggle:hover {
+  background: rgba(33, 150, 243, 0.14);
+  transform: translateY(-1px);
+}
+
+.staff-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.staff-actions.hidden-item {
+  display: none !important;
+}
+
+.staff-actions button {
+  flex: 1;
+  min-width: 140px;
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: none;
+  color: white;
+  background: #333;
+}
+
+.staff-actions button.secondary {
+  background: #2196f3;
+}
+
+.tables-section,
+#orderSection {
+  margin-bottom: 24px;
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.05);
+}
+
+h2,
+h3 {
+  color: #2b2b2b;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  padding: 10px 0 0;
+}
+
+.table {
+  padding: 22px 16px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  border-radius: 16px;
+  font-weight: bold;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.table:hover {
+  transform: translateY(-3px);
+}
+
+.occupied {
+  background: #ff9800;
+}
+
+#orderSection {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 18px;
+}
+
+.menu-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.menu-buttons h3 {
+  grid-column: 1 / -1;
+  margin: 0 0 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  color: #333;
+}
+
+.menu-buttons button {
+  width: 100%;
+  text-align: left;
+  background: #ffffff;
+  color: #2b2b2b;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 12px;
+  font-weight: 700;
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.menu-buttons button:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.menu-category-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.category-chip {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: #fff;
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.category-chip:hover,
+.category-chip.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.menu-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.category-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.secondary-button {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  padding: 12px 16px;
+  border-radius: 12px;
+}
+
+.hidden-item {
+  display: none !important;
+}
+
+.order-box {
+  padding: 18px;
+  background: #fafafa;
+  border-radius: 18px;
+  border: 1px solid #ececec;
+}
+
+.order-box h3 {
+  margin-top: 0;
+}
+
+#orderList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+
+#orderList li {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #ececec;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.actions button,
+.menu-buttons button,
+button {
+  font-size: 0.95rem;
+}
+
+button {
+  cursor: pointer;
+  outline: none;
+}
+
+.menu-buttons button:active,
+.actions button:active {
+  transform: scale(0.99);
+}
+
+.actions button {
+  flex: 1;
+  min-width: 120px;
+  border-radius: 12px;
+  background: #333;
+  color: white;
+  padding: 14px 16px;
+  border: none;
+}
+
+.menu-buttons button:nth-of-type(odd) {
+  background: #ffffff;
+}
+
+.menu-buttons button:nth-of-type(even) {
+  background: #f8f8f8;
+}
+
+@media (max-width: 1024px) {
+  #orderSection {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 14px;
+  }
+
+  .tables-section,
+  #orderSection {
+    padding: 14px;
+  }
+
+  .grid {
+    gap: 10px;
+  }
+
+  .table {
+    min-height: 90px;
+    padding: 18px 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    text-align: left;
+  }
+
+  .header,
+  .tables-section,
+  #orderSection {
+    border-radius: 16px;
+  }
+
+  .tables-section h2,
+  #orderSection h2,
+  #orderSection h3 {
+    font-size: 1.1rem;
+  }
+
+  .menu-buttons button {
+    padding: 12px 10px;
+    font-size: 0.95rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 440px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .menu-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+</head>
+
+<body>
+<div class="app-shell">
+  <header class="header">
+    <h1>11N Brasserie</h1>
+    <p class="brand-subtitle">11N Brasserie | Cafetería & Matcha en Teatinos Málaga</p>
+    <div class="reviews">
+      <span>Opiniones de clientes</span>
+      <span>★ ★ ★ ★ ☆</span>
+      <a href="https://maps.app.goo.gl/XBRVsLkewwwFWaLS6?g_st=ic" target="_blank" rel="noopener noreferrer">Ver reseñas</a>
+    </div>
+    <button class="staff-toggle" onclick="enterStaffMode()">Modo Staff</button>
+  </header>
+
+  <section class="tables-section">
+    <h2>Mesas</h2>
+    <div id="tables" class="grid"></div>
+  </section>
+
+  <section id="orderSection" style="display:none;">
+    <h2 id="mesaTitle"></h2>
+
+    <div class="menu-controls">
+      <span class="category-title" id="categoryTitle">Selecciona una categoría para comenzar</span>
+      <button id="menuBack" class="secondary-button hidden-item" onclick="showCategoryMenu()">Volver a categorías</button>
+    </div>
+
+    <div class="menu-category-selector" id="menuCategorySelector">
+      <button class="category-chip" onclick="showCategory('matcha')">🍵 Matcha</button>
+      <button class="category-chip" onclick="showCategory('coldcoffee')">🧊 Café Helado</button>
+      <button class="category-chip" onclick="showCategory('hotdrinks')">☕ Bebidas Calientes</button>
+      <button class="category-chip" onclick="showCategory('tea')">🍵 Té</button>
+      <button class="category-chip" onclick="showCategory('smoothies')">🍹 Smoothies & Zumos</button>
+      <button class="category-chip" onclick="showCategory('bottledjuices')">🧃 Zumos de Botella</button>
+      <button class="category-chip" onclick="showCategory('milkshakes')">🥤 Batidos</button>
+      <button class="category-chip" onclick="showCategory('lemonades')">🍋 Limonadas Caseras</button>
+      <button class="category-chip" onclick="showCategory('drinks')">🥤 Bebidas</button>
+      <button class="category-chip" onclick="showCategory('breakfast')">🍳 Desayunos</button>
+      <button class="category-chip" onclick="showCategory('worldbreakfast')">🌍 Desayunos del Mundo</button>
+      <button class="category-chip" onclick="showCategory('churros')">🍩 Churros</button>
+      <button class="category-chip" onclick="showCategory('moroccans')">🫓 Tortitas Marroquíes</button>
+      <button class="category-chip" onclick="showCategory('eggs')">🍳 Huevos</button>
+      <button class="category-chip" onclick="showCategory('sandwiches')">🥪 Pitufos</button>
+      <button class="category-chip" onclick="showCategory('croissants')">🥐 Croissants</button>
+      <button class="category-chip" onclick="showCategory('waffles')">🧇 Gofres</button>
+      <button class="category-chip" onclick="showCategory('savorycrepes')">🥞 Crêpes Salados</button>
+      <button class="category-chip" onclick="showCategory('sweetcrepes')">🍫 Crêpes Dulces</button>
+      <button class="category-chip" onclick="showCategory('starters')">🍽️ Entrantes</button>
+      <button class="category-chip" onclick="showCategory('salads')">🥗 Ensaladas</button>
+      <button class="category-chip" onclick="showCategory('skewers')">🍢 Brochetas</button>
+      <button class="category-chip" onclick="showCategory('mains')">🍽️ Platos Principales</button>
+      <button class="category-chip" onclick="showCategory('wraps')">🌯 Wraps & Sándwiches</button>
+    </div>
+
+    <div class="menu-buttons" id="menuButtons">
+
+    <!-- 🍵 MATCHA -->
+    <h3 data-category="matcha">🍵 Matcha</h3>
+    <button onclick="addItem('Matcha Latte Clásico',4)">Clásico - 4€</button>
+    <button onclick="addItem('Matcha Latte de Vainilla',5)">Vainilla - 5€</button>
+    <button onclick="addItem('Chai Matcha Latte',6)">Chai - 6€</button>
+    <button onclick="addItem('Matcha Caramelo Salado',6)">Caramelo - 6€</button>
+    <button onclick="addItem('Matcha Coco y Mango',6)">Coco Mango - 6€</button>
+    <button onclick="addItem('Matcha Piña Colada',6)">Piña Colada - 6€</button>
+    <button onclick="addItem('Matcha Plátano',6)">Plátano - 6€</button>
+    <button onclick="addItem('Matcha Morado Especial',6)">Morado - 6€</button>
+
+    <!-- ➕ EXTRA -->
+    <button onclick="addExtra('Leche vegetal',0.80)">+ Leche vegetal (0.80€)</button>
+
+    
+    <hr>
+	<h3 data-category="coldcoffee">🧊 Café Helado</h3>
+
+	<button onclick="addItem('Frappuccino de Chocolate',3.5)">Chocolate - 3.50€</button>
+	<button onclick="addItem('Frappuccino de Caramelo',3.5)">Caramelo - 3.50€</button>
+	<button onclick="addItem('Affogato',2.5)">Affogato - 2.50€</button>
+	<button onclick="addItem('Spanish Latte',2.5)">Spanish Latte - 2.50€</button>
+	<button onclick="addItem('Latte de Caramelo',3.5)">Caramelo Latte - 3.50€</button>
+	<button onclick="addItem('Dubái Latte',4)">Dubái Latte - 4.00€</button>
+	<button onclick="addItem('Latte de Vainilla',3.5)">Vainilla Latte - 3.50€</button>
+	
+	<hr>
+	<h3 data-category="hotdrinks">☕ Bebidas Calientes</h3>
+
+	<button onclick="addItem('Espresso',1.8)">Espresso - 1.80€</button>
+	<button onclick="addItem('Americano',2)">Americano - 2.00€</button>
+	<button onclick="addItem('Café con Leche',2.3)">Café con Leche - 2.30€</button>
+	<button onclick="addItem('Capuccino',2.3)">Capuccino - 2.30€</button>
+	<button onclick="addItem('Latte',2.5)">Latte - 2.50€</button>
+	<button onclick="addItem('Café Bombón',2.3)">Bombón - 2.30€</button>
+	<button onclick="addItem('Flat White',2.5)">Flat White - 2.50€</button>
+	<button onclick="addItem('Café Cortado',2.3)">Cortado - 2.30€</button>
+	<button onclick="addItem('Café Manchado',2.3)">Manchado - 2.30€</button>
+	<button onclick="addItem('Macchiato',2.5)">Macchiato - 2.50€</button>
+	<button onclick="addItem('Chai Latte',3)">Chai Latte - 3.00€</button>
+	<button onclick="addItem('Latte Caramelo',3.5)">Caramelo - 3.50€</button>
+	<button onclick="addItem('Latte Pumpkin Spice',3.5)">Pumpkin - 3.50€</button>
+	<button onclick="addItem('Chocolate Caliente',2)">Chocolate - 2.00€</button>
+	<button onclick="addItem('Cola Cao',2)">Cola Cao - 2.00€</button>
+	
+	<hr>
+	<h3 data-category="tea">🍵 Té</h3>
+
+	<button onclick="addItem('Rooibos',3)">Rooibos - 3.00€</button>
+	<button onclick="addItem('Té Verde',3)">Té Verde - 3.00€</button>
+	<button onclick="addItem('Té Rojo',3)">Té Rojo - 3.00€</button>
+	<button onclick="addItem('Té Negro',3)">Té Negro - 3.00€</button>
+	<button onclick="addItem('Té de Manzanilla',3)">Manzanilla - 3.00€</button>
+	<button onclick="addItem('Té de Poleo y Menta',3)">Poleo Menta - 3.00€</button>
+	<button onclick="addItem('Té Marroquí',3.5)">Marroquí - 3.50€</button>
+
+	<!-- ➕ Extra -->
+	<button onclick="addExtra('Con leche',0.50)">+ Con leche (0.50€)</button>
+	
+	<hr>
+	<h3 data-category="smoothies">🍹 Smoothies & Zumos</h3>
+
+	<button onclick="addItem('Immunity',4)">Immunity - 4.00€</button>
+	<button onclick="addItem('Oriental',4)">Oriental - 4.00€</button>
+	<button onclick="addItem('Tropical',5)">Tropical - 5.00€</button>
+	<button onclick="addItem('Berry Blush',5)">Berry Blush - 5.00€</button>
+	<button onclick="addItem('11N Smoothie',5.5)">11N Smoothie - 5.50€</button>
+	<button onclick="addItem('Detox Dream',4.5)">Detox Dream - 4.50€</button>
+	<button onclick="addItem('Zumo de Naranja Natural',3.5)">Zumo Naranja - 3.50€</button>
+
+
+	<hr>
+	<h3 data-category="bottledjuices">🧃 Zumos de Botella</h3>
+
+	<button onclick="addItem('Zumo de Melocotón',1.8)">Melocotón - 1.80€</button>
+	<button onclick="addItem('Zumo de Naranja',1.8)">Naranja - 1.80€</button>
+	<button onclick="addItem('Zumo de Piña',1.8)">Piña - 1.80€</button>
+	
+	<hr>
+	<h3 data-category="milkshakes">🥤 Batidos</h3>
+
+	<button onclick="addItem('Batido de Fresa',1.8)">Fresa - 1.80€</button>
+	<button onclick="addItem('Batido de Chocolate',1.8)">Chocolate - 1.80€</button>
+	<button onclick="addItem('Batido de Vainilla',1.8)">Vainilla - 1.80€</button>
+	
+	<hr>
+	<h3 data-category="lemonades">🍋 Limonadas Caseras</h3>
+
+	<button onclick="addItem('Limonada Limón y Menta',4.5)">Clásica - 4.50€</button>
+	<button onclick="addItem('Limonada Piña Colada',5)">Piña Colada - 5.00€</button>
+	<button onclick="addItem('Limonada Maracuyá',5)">Maracuyá - 5.00€</button>
+
+	<!-- ➕ اختيار ماء -->
+	<button onclick="addExtra('Con gas',0)">+ Con gas</button>
+	<button onclick="addExtra('Sin gas',0)">+ Sin gas</button>
+	
+	<hr>
+	<h3 data-category="drinks">🥤 Bebidas</h3>
+
+	<button onclick="addItem('Agua Pequeña',1.5)">Agua S - 1.50€</button>
+	<button onclick="addItem('Agua Mediana',2)">Agua M - 2.00€</button>
+	<button onclick="addItem('Agua Grande',3)">Agua L - 3.00€</button>
+	<button onclick="addItem('Agua con Gas',2.5)">Agua Gas - 2.50€</button>
+
+	<button onclick="addItem('Coca-Cola',2.5)">Coca-Cola - 2.50€</button>
+	<button onclick="addItem('Coca-Cola Zero',2.5)">Coca Zero - 2.50€</button>
+	<button onclick="addItem('Fanta Naranja',2.5)">Fanta Naranja - 2.50€</button>
+	<button onclick="addItem('Fanta Limón',2.5)">Fanta Limón - 2.50€</button>
+	<button onclick="addItem('Sprite',2.5)">Sprite - 2.50€</button>
+	<button onclick="addItem('Tónica Schwepps',2.5)">Tónica - 2.50€</button>
+
+	<button onclick="addItem('Aquarius Naranja',2.5)">Aquarius Naranja - 2.50€</button>
+	<button onclick="addItem('Aquarius Limón',2.5)">Aquarius Limón - 2.50€</button>
+
+	<button onclick="addItem('Té Fuze Maracuyá',2.5)">Fuze Maracuyá - 2.50€</button>
+	<button onclick="addItem('Té Fuze Limón',2.5)">Fuze Limón - 2.50€</button>
+	
+	<hr>
+	<h3 data-category="breakfast">🍳 Desayunos</h3>
+
+	<button onclick="addItem('Bowl de Açai',12)">Bowl de Açai - 12.00€</button>
+
+	<button onclick="addItem('Tostada Aguacate Bruschetta',6)">Aguacate Bruschetta - 6.00€</button>
+
+	<!-- ➕ Extras -->
+	<button onclick="addExtra('Huevo',1)">+ Huevo (1.00€)</button>
+	<button onclick="addExtra('Salmón',1.2)">+ Salmón (1.20€)</button>
+
+	<button onclick="addItem('Tostada 11N',8)">Tostada 11N - 8.00€</button>
+	<button onclick="addItem('Tostada de Pesto',5)">Pesto - 5.00€</button>
+
+	<button onclick="addItem('Pancakes Americanos',4.5)">Pancakes - 4.50€</button>
+	<button onclick="addItem('Burrito de Desayuno',8)">Burrito - 8.00€</button>
+	
+	<hr>
+	<h3 data-category="worldbreakfast">🌍 Desayunos del Mundo</h3>
+
+	<button onclick="addItem('Desayuno España',6.3)">España - 6.30€</button>
+	<button onclick="addItem('Desayuno EUA',7.5)">EUA - 7.50€</button>
+	
+	<hr>
+	<h3 data-category="churros">🍩 Churros</h3>
+
+	<button onclick="addItem('Mini Churro',0.30)">Mini Churro - 0.30€</button>
+	
+	<hr>
+	<h3 data-category="moroccans">🫓 Tortitas Marroquíes</h3>
+
+	<button onclick="addItem('Tortita Pollo',3)">Pollo - 3.00€</button>
+	<button onclick="addItem('Tortita Mixto',2.5)">Mixto - 2.50€</button>
+	<button onclick="addItem('Tortita Carne Picada',3.5)">Carne - 3.50€</button>
+	<button onclick="addItem('Tortita Miel y Almendras',2.5)">Miel Almendras - 2.50€</button>
+	
+	<hr>
+	<h3 data-category="eggs">🍳 Huevos</h3>
+
+	<button onclick="addItem('Huevos Fritos',3.5)">Fritos - 3.50€</button>
+	<button onclick="addItem('Huevos al Ajillo',3.5)">Ajillo - 3.50€</button>
+	<button onclick="addItem('Huevos Revueltos',3.5)">Revueltos - 3.50€</button>
+	<button onclick="addItem('Huevos Revueltos 11N',4)">Revueltos 11N - 4.00€</button>
+	<button onclick="addItem('Tortilla Francesa',3.5)">Francesa - 3.50€</button>
+	<button onclick="addItem('Tortilla Vegetariana',4.5)">Vegetariana - 4.50€</button>
+
+	<!-- ➕ Extras -->
+	<button onclick="addExtra('Salmón Ahumado',1.2)">+ Salmón (1.20€)</button>
+	<button onclick="addExtra('Pavo',1)">+ Pavo (1.00€)</button>
+	
+	<hr>
+	<h3 data-category="sandwiches">🥪 Pitufos</h3>
+
+	<button onclick="addItem('Pitufo Tomate',3)">Tomate - 3.00€</button>
+	<button onclick="addItem('Pitufo Atún',4)">Atún - 4.00€</button>
+	<button onclick="addItem('Pitufo Queso',2.5)">Queso - 2.50€</button>
+	<button onclick="addItem('Pitufo Tortilla',3.5)">Tortilla - 3.50€</button>
+	<button onclick="addItem('Pitufo Mixto',3)">Mixto - 3.00€</button>
+
+	<!-- ➕ Extras -->
+	<button onclick="addExtra('Aguacate',1)">+ Aguacate (1.00€)</button>
+	<button onclick="addExtra('Salmón Ahumado',1.2)">+ Salmón (1.20€)</button>
+
+	<!-- 🥖 اختيار العيش -->
+	<button onclick="addExtra('Pan Blanco',0)">+ Pan Blanco</button><!-- ضص3 -->
+	<button onclick="addExtra('Pan Integral',0)">+ Pan Integral</button>
+	
+	<hr>
+	<h3 data-category="croissants">🥐 Croissants</h3>
+
+	<button onclick="addItem('Croissant Chocolate',3)">Chocolate - 3.00€</button>
+	<button onclick="addItem('Croissant Mixto',3.5)">Mixto - 3.50€</button>
+	<button onclick="addItem('Croissant Tortilla',4)">Tortilla - 4.00€</button>
+	<button onclick="addItem('Croissant Aguacate Salmón',5)">Aguacate & Salmón - 5.00€</button>
+	<button onclick="addItem('Croissant Mermelada',2.5)">Mermelada - 2.50€</button>
+	
+	<hr>
+	<h3 data-category="waffles">🧇 Gofres</h3>
+
+	<button onclick="addItem('Gofre',2)">Gofre - 2.00€</button>
+
+	<!-- ➕ Extras -->
+	<button onclick="addExtra('Nutella',0.5)">+ Nutella (0.50€)</button>
+	<button onclick="addExtra('Nata Montada',0.5)">+ Nata (0.50€)</button>
+	<button onclick="addExtra('Plátano',1)">+ Plátano (1.00€)</button>
+	<button onclick="addExtra('Dulce de Leche',0.5)">+ Dulce (0.50€)</button>
+	<button onclick="addExtra('Frutos Rojos',2)">+ Frutos Rojos (2.00€)</button>
+	
+	<hr>
+	<h3 data-category="savorycrepes">🥞 Crêpes Salados</h3>
+
+	<button onclick="addItem('Crepe Mixto',4.5)">Mixto - 4.50€</button>
+	<button onclick="addItem('Crepe Salmón Espinacas',5.5)">Salmón - 5.50€</button>
+	<button onclick="addItem('Crepe Atún',5.5)">Atún - 5.50€</button>
+	<button onclick="addItem('Crepe Mozzarella',4)">Mozzarella - 4.00€</button>
+	
+	<hr>
+	<h3 data-category="sweetcrepes">🍫 Crêpes Dulces</h3>
+
+	<button onclick="addItem('Crepe Nutella',4)">Nutella - 4.00€</button>
+	<button onclick="addItem('Crepe Nutella Fresa',5)">Nutella & Fresa - 5.00€</button>
+	<button onclick="addItem('Crepe Nutella Plátano',4.5)">Nutella & Plátano - 4.50€</button>
+	<button onclick="addItem('Crepe Dulce de Leche',4)">Dulce de Leche - 4.00€</button>
+	<button onclick="addItem('Crepe Chocolate Blanco',4.5)">Chocolate Blanco - 4.50€</button>
+	<button onclick="addItem('Crepe Oreo',5)">Oreo - 5.00€</button>
+	<button onclick="addItem('Crepe Biscoff',5)">Biscoff - 5.00€</button>
+	<button onclick="addItem('Crepe Dubai Chocolate',6)">Dubai Chocolate - 6.00€</button>
+	
+	<hr>
+	<h3 data-category="starters">🍽️ Entrantes</h3>
+
+	<button onclick="addItem('Rollitos de Gambas',7.5)">Rollitos Gambas - 7.50€</button>
+	<button onclick="addItem('Hummus',6.5)">Hummus - 6.50€</button>
+	<button onclick="addItem('Pastela de Pollo',8)">Pastela Pollo - 8.00€</button>
+	<button onclick="addItem('Croquetas de Patata',4)">Croquetas - 4.00€</button>
+	<button onclick="addItem('Guacamole',6)">Guacamole - 6.00€</button>
+	<button onclick="addItem('Gyoza de Pollo',7.5)">Gyoza - 7.50€</button>
+	<button onclick="addItem('Tempura de Gambas',7.5)">Tempura - 7.50€</button>
+	
+	<hr>
+	<h3 data-category="salads">🥗 Ensaladas</h3>
+
+	<button onclick="addItem('Ensalada César',9)">César - 9.00€</button>
+	<button onclick="addItem('Ensalada Asiática',12.5)">Asiática - 12.50€</button>
+	
+	<hr>
+	<h3 data-category="skewers">🍢 Brochetas</h3>
+
+	<button onclick="addItem('Brocheta de Pollo',7)">Pollo - 7.00€</button>
+	<button onclick="addItem('Brocheta de Carne',8)">Carne - 8.00€</button>
+	<button onclick="addItem('Brocheta de Gamba',7.5)">Gamba - 7.50€</button>
+	
+	<hr>
+	<h3 data-category="mains">🍽️ Platos Principales</h3>
+
+	<button onclick="addItem('Salmón a la Plancha',23)">Salmón - 23.00€</button>
+	<button onclick="addItem('Pollo Curry Masala',15)">Pollo Curry - 15.00€</button>
+	<button onclick="addItem('Nasi Goreng',17.5)">Nasi Goreng - 17.50€</button>
+	<button onclick="addItem('Estofado Ternera',20)">Estofado - 20.00€</button>
+	<button onclick="addItem('Tajine Albóndigas',12.5)">Tajine - 12.50€</button>
+	<button onclick="addItem('11N Burger',12)">11N Burger - 12.00€</button>
+	
+	<hr>
+	<h3 data-category="wraps">🌯 Wraps & Sándwiches</h3>
+
+	<button onclick="addItem('Wrap Pollo Curry',7)">Pollo Curry - 7.00€</button>
+	<button onclick="addItem('Wrap Shawarma',8)">Shawarma - 8.00€</button>
+	<button onclick="addItem('Wrap Pollo Mostaza Miel',7.5)">Mostaza Miel - 7.50€</button>
+	<button onclick="addItem('Philly Cheese Steak 11N',8)">Philly Steak - 8.00€</button>
+	</div>
+
+  <div class="order-box">
+    <h3>Pedido</h3>
+    <ul id="orderList"></ul>
+    <h3 id="total">Total: 0€</h3>
+
+    <div class="staff-actions hidden-item" id="staffActions">
+      <button class="secondary" onclick="closeTable()">Cerrar Mesa</button>
+      <button onclick="showOrderHistory()">Historial de pedido</button>
+      <button onclick="removeLastItem()">Eliminar último ítem</button>
+      <button onclick="exitStaffMode()">Salir Staff</button>
+    </div>
+    <div class="actions" id="guestActions">
+      <button onclick="back()">⬅ Volver</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentTable = null;
+let tables = {};
+let currentCategory = null;
+
+const categoryLabels = {
+  matcha: '🍵 Matcha',
+  coldcoffee: '🧊 Café Helado',
+  hotdrinks: '☕ Bebidas Calientes',
+  tea: '🍵 Té',
+  smoothies: '🍹 Smoothies & Zumos',
+  bottledjuices: '🧃 Zumos de Botella',
+  milkshakes: '🥤 Batidos',
+  lemonades: '🍋 Limonadas Caseras',
+  drinks: '🥤 Bebidas',
+  breakfast: '🍳 Desayunos',
+  worldbreakfast: '🌍 Desayunos del Mundo',
+  churros: '🍩 Churros',
+  moroccans: '🫓 Tortitas Marroquíes',
+  eggs: '🍳 Huevos',
+  sandwiches: '🥪 Pitufos',
+  croissants: '🥐 Croissants',
+  waffles: '🧇 Gofres',
+  savorycrepes: '🥞 Crêpes Salados',
+  sweetcrepes: '🍫 Crêpes Dulces',
+  starters: '🍽️ Entrantes',
+  salads: '🥗 Ensaladas',
+  skewers: '🍢 Brochetas',
+  mains: '🍽️ Platos Principales',
+  wraps: '🌯 Wraps & Sándwiches'
+};
+
+for(let i=1;i<=20;i++){
+  tables[i] = {items:[], total:0};
+}
+
+const tableContainer = document.getElementById("tables");
+const menuButtons = document.getElementById("menuButtons");
+const categoryTitle = document.getElementById("categoryTitle");
+const menuBack = document.getElementById("menuBack");
+const categoryChips = Array.from(document.querySelectorAll(".category-chip"));
+const staffActions = document.getElementById("staffActions");
+const guestActions = document.getElementById("guestActions");
+let staffMode = false;
+const staffPassword = '281985';
+
+function updateRoleUI(){
+  if(staffMode){
+    staffActions.classList.remove('hidden-item');
+    guestActions.classList.add('hidden-item');
+  } else {
+    staffActions.classList.add('hidden-item');
+    guestActions.classList.remove('hidden-item');
+  }
+}
+
+function enterStaffMode(){
+  let password = prompt('Ingrese clave de Staff:');
+  if(password === staffPassword){
+    staffMode = true;
+    updateRoleUI();
+    alert('Modo Staff activado');
+  } else {
+    alert('Clave incorrecta');
+  }
+}
+
+function exitStaffMode(){
+  staffMode = false;
+  updateRoleUI();
+  alert('Modo Staff desactivado');
+}
+
+function showOrderHistory(){
+  if(currentTable === null){
+    alert('Seleccione una mesa primero');
+    return;
+  }
+  alert('Historial de pedido\nMesa ' + currentTable + '\nTotal: ' + tables[currentTable].total.toFixed(2) + '€');
+}
+
+function removeLastItem(){
+  if(currentTable === null){
+    alert('Seleccione una mesa primero');
+    return;
+  }
+  let items = tables[currentTable].items;
+  if(items.length === 0){
+    alert('No hay ítems para eliminar');
+    return;
+  }
+  let removed = items.pop();
+  tables[currentTable].total -= removed.price;
+  if(removed.extras){
+    removed.extras.forEach(extra => { tables[currentTable].total -= extra.price; });
+  }
+  updateOrder();
+  renderTables();
+}
+
+function showCategoryMenu(){
+  currentCategory = null;
+  categoryTitle.innerText = 'Selecciona una categoría para comenzar';
+  menuBack.classList.add('hidden-item');
+  categoryChips.forEach(chip => chip.classList.remove('active'));
+
+  Array.from(menuButtons.children).forEach(node => {
+    node.classList.add('hidden-item');
+  });
+}
+
+function showCategory(category){
+  currentCategory = category;
+  categoryTitle.innerText = categoryLabels[category]
+    ? 'Categoría: ' + categoryLabels[category]
+    : 'Menú';
+  menuBack.classList.remove('hidden-item');
+  categoryChips.forEach(chip => chip.classList.toggle('active', chip.getAttribute('onclick').includes(category)));
+
+  let show = false;
+  Array.from(menuButtons.children).forEach(node => {
+    if(node.tagName === 'H3' && node.dataset.category){
+      show = node.dataset.category === category;
+      node.classList.toggle('hidden-item', !show);
+      return;
+    }
+
+    if(node.tagName === 'H3') {
+      node.classList.add('hidden-item');
+      return;
+    }
+
+    if(show){
+      node.classList.remove('hidden-item');
+    } else {
+      node.classList.add('hidden-item');
+    }
+  });
+}
+
+// Dibujar las mesas
+function renderTables(){
+  tableContainer.innerHTML = "";
+
+  for(let i=1;i<=20;i++){
+    let div = document.createElement("div");
+    div.className = "table";
+
+    if(tables[i].items.length > 0){
+      div.classList.add("occupied");
+      div.innerHTML = "Mesa " + i + "<br>" + tables[i].total.toFixed(2) + "€";
+    } else {
+      div.innerHTML = "Mesa " + i;
+    }
+
+    div.onclick = () => openTable(i);
+    tableContainer.appendChild(div);
+  }
+}
+
+// Abrir mesa
+function openTable(n){
+  currentTable = n;
+  document.getElementById("orderSection").style.display = "block";
+  document.getElementById("mesaTitle").innerText = "Mesa " + n;
+  updateOrder();
+  showCategoryMenu();
+}
+
+// Añadir producto
+function addItem(name, price){
+  if(currentTable === null){
+    alert("Selecciona una mesa primero");
+    return;
+  }
+
+  tables[currentTable].items.push({name, price});
+  tables[currentTable].total += price;
+
+  updateOrder();
+  renderTables();
+}
+
+// Añadir complemento al último producto
+function addExtra(name, price){
+  if(currentTable === null){
+    alert("Selecciona una mesa primero");
+    return;
+  }
+
+  let items = tables[currentTable].items;
+
+  if(items.length === 0){
+    alert("Añade un producto primero");
+    return;
+  }
+
+  let lastItem = items[items.length - 1];
+
+  if(!lastItem.extras){
+    lastItem.extras = [];
+  }
+
+  lastItem.extras.push({name, price});
+  tables[currentTable].total += price;
+
+  updateOrder();
+}
+
+// Actualizar pedido
+function updateOrder(){
+  let list = document.getElementById("orderList");
+  list.innerHTML = "";
+
+  if(currentTable === null) return;
+
+  tables[currentTable].items.forEach(item=>{
+    let li = document.createElement("li");
+    li.innerText = item.name + " - " + item.price.toFixed(2) + "€";
+    list.appendChild(li);
+
+    if(item.extras){
+      item.extras.forEach(extra=>{
+        let extraLi = document.createElement("li");
+        extraLi.style.marginLeft = "20px";
+        extraLi.innerText = "+ " + extra.name + " - " + extra.price.toFixed(2) + "€";
+        list.appendChild(extraLi);
+      });
+    }
+  });
+
+  document.getElementById("total").innerText =
+    "Total: " + tables[currentTable].total.toFixed(2) + "€";
+}
+
+// Cerrar mesa
+function closeTable(){
+  if(currentTable === null) return;
+
+  tables[currentTable] = {items:[], total:0};
+
+  updateOrder();
+  renderTables();
+}
+
+// Volver
+function back(){
+  document.getElementById("orderSection").style.display = "none";
+  currentTable = null;
+}
+
+// تشغيل
+renderTables();
+</script>
+</div>
+
+</body>
+</html>
