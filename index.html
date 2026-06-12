@@ -787,6 +787,7 @@ const staffActions = document.getElementById("staffActions");
 const guestActions = document.getElementById("guestActions");
 let staffMode = false;
 const staffPassword = '281985';
+let lastItemClick = 0; // timestamp to prevent duplicate taps
 
 function updateRoleUI(){
   if(staffMode){
@@ -859,27 +860,28 @@ function showCategory(category){
     ? 'Categoría: ' + categoryLabels[category]
     : 'Menú';
   menuBack.classList.remove('hidden-item');
-  categoryChips.forEach(chip => chip.classList.toggle('active', chip.getAttribute('onclick').includes(category)));
 
-  let show = false;
-  Array.from(menuButtons.children).forEach(node => {
-    if(node.tagName === 'H3' && node.dataset.category){
-      show = node.dataset.category === category;
-      node.classList.toggle('hidden-item', !show);
-      return;
-    }
+  // update active state of chips using dataset for stability
+  categoryChips.forEach(chip => chip.classList.toggle('active', chip.dataset && chip.dataset.category === category));
 
-    if(node.tagName === 'H3') {
-      node.classList.add('hidden-item');
-      return;
-    }
+  // hide all children first
+  const children = Array.from(menuButtons.children);
+  children.forEach(n => n.classList.add('hidden-item'));
 
-    if(show){
+  // find header for the selected category and reveal it + its following items until next header
+  for(let i=0;i<children.length;i++){
+    const node = children[i];
+    if(node.tagName === 'H3' && node.dataset && node.dataset.category === category){
       node.classList.remove('hidden-item');
-    } else {
-      node.classList.add('hidden-item');
+      // reveal subsequent siblings until next H3
+      let j = i+1;
+      while(j < children.length && !(children[j].tagName === 'H3' && children[j].dataset && children[j].dataset.category)){
+        children[j].classList.remove('hidden-item');
+        j++;
+      }
+      break;
     }
-  });
+  }
 }
 
 // Dibujar las mesas
@@ -917,6 +919,11 @@ function addItem(name, price){
     alert("Selecciona una mesa primero");
     return;
   }
+
+  // prevent accidental double-tap on mobile
+  const now = Date.now();
+  if(now - lastItemClick < 450) return;
+  lastItemClick = now;
 
   tables[currentTable].items.push({name, price});
   tables[currentTable].total += price;
